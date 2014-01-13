@@ -14,18 +14,18 @@ entity SramController is
 		Clk : in bit1;
 		RstN : in bit1;
 		AddrIn : in word(AddrW-1 downto 0);
-		DataIn : in word(DataW-1 downto 0);
-		DataOut : out word(DataW-1 downto 0);
+		WrData : in word(DataW-1 downto 0);
+		RdData : out word(DataW-1 downto 0);
 		We     : in bit1;
 		Re     : in bit1;
 		--
 		D       : inout word(DataW-1 downto 0);
 		AddrOut : out word(AddrW-1 downto 0);
-		CeN : out bit1;
-		OeN : out bit1;
-		WeN : out bit1;
-		UbN : out bit1;
-		LbN : out bit1
+		CeN     : out bit1;
+		OeN     : out bit1;
+		WeN     : out bit1;
+		UbN     : out bit1;
+		LbN     : out bit1
 	);
 end entity;
 
@@ -67,7 +67,7 @@ begin
 		end if;
 	end process;
 
-	FSMASync : process (SramFSM_D, We, Re, Addr_D, Data_D, AddrIn, DataIn)
+	FSMASync : process (SramFSM_D, We, Re, Addr_D, Data_D, AddrIn, WrData, D)
 	begin
 		SramFSM_N <= SramFSM_D;
 		Addr_N <= Addr_D;
@@ -100,7 +100,7 @@ begin
 			if (We = '1' ) then
 				SramFSM_N <= WR0;
 				--
-				Data_N <= DataIn;
+				Data_N <= WrData;
 				Addr_N <= AddrIn;
 				AddrOut <= AddrIn;
 				
@@ -117,6 +117,7 @@ begin
 			end if;
 		end case;
 	end process;
+	RdData <= Data_D;
 end architecture;
 
 
