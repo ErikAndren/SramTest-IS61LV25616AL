@@ -16,6 +16,9 @@ entity SramTestTop is
 	Clk      : in bit1;
 	Button3  : in bit1;
 	--
+	Button0  : in bit1;
+	Button1  : in bit1;
+	--
 	Segments : out word(BcdSegs-1 downto 0);
 	Display  : out word(Displays-1 downto 0);
 	--
@@ -31,24 +34,16 @@ entity SramTestTop is
 end entity;
 
 architecture rtl of SramTestTop is
-
 	constant Freq : positive := 50000000;
-	--
-	signal Data : word(bits(10**Displays)-1 downto 0);
-	
-	signal Addr : word(AddrW-1 downto 0);
+	--	
+	signal SramAddr : word(AddrW-1 downto 0);
 	signal SramWrData : word(DataW-1 downto 0);
 	signal SramRdData : word(DataW-1 downto 0);
 	signal SramWe : bit1;
 	signal SramRe : bit1;
 
+	signal Data : word(bits(10**Displays)-1 downto 0);
 begin
-	Data <= conv_word(12345678, Data'length);
-	Addr <= (others => '0');
-	SramWrData <= (others => '0');
-	SramWe <= '0';
-	SramRe <= '0';
-
 	BCDDisplay : entity work.BcdDisp
 	generic map (
 		Freq => Freq,
@@ -62,27 +57,40 @@ begin
 		Segments => Segments,
 		Display  => Display
 	);
+	Data <= xt0(SramRdData, Data'length);
 	
 	SramCont : entity work.SramController
 	port map (
 		Clk  => Clk,
 		RstN => Button3,
 		--
-		AddrIn => Addr,
+		AddrIn => SramAddr,
 		WrData => SramWrData,
 		RdData => SramRdData,
 		We     => SramWe,
 		Re     => SramRe,
 		--
-		D      => D,
+		D       => D,
 		AddrOut => AddrOut,
-		CeN    => CeN,
-		OeN    => OeN,
-		WeN    => WeN,
-		UbN    => UbN,
-		LbN    => LbN
+		CeN     => CeN,
+		OeN     => OeN,
+		WeN     => WeN,
+		UbN     => UbN,
+		LbN     => LbN
 	);
 	
-	
+	SramTest : entity work.SramControllerTestGen
+	port map (
+		Clk  => Clk,
+		RstN => Button3,
+		--
+		Button0 => Button0,
+		Button1 => Button1,
+		--
+		Addr => SramAddr,
+		Data => SramWrData,
+		We   => SramWe, 
+		Re   => SramRe
+	);
 	
 end architecture rtl;
