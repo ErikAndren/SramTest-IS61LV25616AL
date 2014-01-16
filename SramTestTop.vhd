@@ -28,8 +28,11 @@ entity SramTestTop is
 	OeN     : out bit1;
 	WeN     : out bit1;
 	UbN     : out bit1;
-	LbN     : out bit1
+	LbN     : out bit1;
 	--
+	flash_oe : out bit1;
+	flash_wr : out bit1;
+	flash_rd : out bit1
 	);
 end entity;
 
@@ -44,6 +47,10 @@ architecture rtl of SramTestTop is
 
 	signal Data : word(bits(10**Displays)-1 downto 0);
 begin
+	flash_oe <= '1';
+	flash_wr <= '1';
+	flash_rd <= '1';
+
 	BCDDisplay : entity work.BcdDisp
 	generic map (
 		Freq => Freq,
@@ -58,6 +65,7 @@ begin
 		Display  => Display
 	);
 	Data <= xt0(SramRdData, Data'length);
+	--Data <= xt0(SramAddr, Data'length);
 	
 	SramCont : entity work.SramController
 	port map (

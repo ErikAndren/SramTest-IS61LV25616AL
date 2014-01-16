@@ -25,7 +25,9 @@ entity SramControllerTestGen is
 end entity;
 
 architecture rtl of SramControllerTestGen is
-	signal WriteCnt_N, WriteCnt_D : word(4-1 downto 0);
+	signal WriteCnt_N, WriteCnt_D : word(8-1 downto 0);
+	signal SeqCnt_N, SeqCnt_D : word(4-1 downto 0);
+	--
 	signal Btn0State_N, Btn0State_D : bit1;
 	signal Btn1State_N, Btn1State_D : bit1;
 	signal Addr_N, Addr_D : word(AddrW-1 downto 0);
@@ -37,30 +39,36 @@ begin
 			Btn0State_D <= '1';
 			Btn1State_D <= '1';
 			Addr_D <= (others => '0');
+			SeqCnt_D <= (others => '0');
 		elsif rising_edge(Clk) then
 			WriteCnt_D <= WriteCnt_N;
 			Btn0State_D <= Btn0State_N;
 			Btn1State_D <= Btn1State_N;
 			Addr_D <= Addr_N;
+			SeqCnt_D <= SeqCnt_N;
 		end if;
 	end process;
 	
-	AsyncProc : process (WriteCnt_D, Btn0State_D, Btn1State_D, Addr_D, Button0, Button1)
+	AsyncProc : process (WriteCnt_D, Btn0State_D, Btn1State_D, Addr_D, Button0, Button1, SeqCnt_D)
 	begin
 		WriteCnt_N <= WriteCnt_D;
 		We <= '0';
 		Re <= '0';
 		Data <= (others => '0');
-		Btn0State_N <= Btn0State_D;
-		Btn1State_N <= Btn1State_D;
+		Btn0State_N <= Button0;
+		Btn1State_N <= Button1;
 		Addr_N <= Addr_D;
+		SeqCnt_N <= SeqCnt_D;
 	
 		-- Initial writes 
-		if WriteCnt_D < 15 and WriteCnt_D(1) = '1' then
+		if WriteCnt_D < 255 then
 			WriteCnt_N <= WriteCnt_D + 1;
-			Addr_N <= xt0(WriteCnt_D + 1, Addr_N'length);
-			We <= '1';
-			Data <= xt0(WriteCnt_D, Data'length);
+			if WriteCnt_D(4) = '1' then
+				SeqCnt_N <= SeqCnt_D + 1;
+				Addr_N <= xt0(SeqCnt_D, Addr_N'length);
+				We <= '1';
+				Data <= xt0(SeqCnt_D, Data'length);
+			end if;
 		elsif Button0 = '0' and Btn0State_D = '1' then
 			Addr_N <= Addr_D - 1;
 			Re <= '1';
@@ -69,6 +77,6 @@ begin
 			Re <= '1';
 		end if;
 	end process;
-	Addr <= Addr_D;
+	Addr <= Addr_N;
 
 end architecture;

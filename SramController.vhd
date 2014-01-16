@@ -113,7 +113,7 @@ begin
 				LbN <= '0';
 				--
 				Addr_N <= AddrIn;
-				Data_N <= x"DEAD";
+				Data_N <= (others => '1');
 			end if;
 		end case;
 	end process;
