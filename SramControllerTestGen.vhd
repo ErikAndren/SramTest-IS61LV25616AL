@@ -81,7 +81,7 @@ begin
 		-- Initial writes 
 		if WriteCnt_D < 255 then
 			WriteCnt_N <= WriteCnt_D + 1;
-			if WriteCnt_D(1 downto 0) = "10" then
+			if WriteCnt_D(0 downto 0) = "1" then
 				SeqCnt_N <= SeqCnt_D + 1;
 				Addr_N <= xt0(SeqCnt_D, Addr_N'length);
 				We <= '1';
