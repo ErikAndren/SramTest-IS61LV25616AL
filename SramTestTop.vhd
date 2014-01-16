@@ -8,9 +8,9 @@ use work.BcdPack.all;
 
 entity SramTestTop is
 	generic (
-	Displays : positive := 8;
-	AddrW : positive := 18;
-	DataW : positive := 16
+		Displays : positive := 8;
+		AddrW : positive := 18;
+		DataW : positive := 16
 	);
 	port (
 	Clk      : in bit1;
