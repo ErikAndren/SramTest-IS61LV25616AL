@@ -113,6 +113,7 @@ begin
 				LbN <= '0';
 				--
 				Addr_N <= AddrIn;
+				AddrOut <= AddrIn;
 				Data_N <= (others => '1');
 			end if;
 		end case;
