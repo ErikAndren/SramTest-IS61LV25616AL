@@ -31,7 +31,25 @@ architecture rtl of SramControllerTestGen is
 	signal Btn0State_N, Btn0State_D : bit1;
 	signal Btn1State_N, Btn1State_D : bit1;
 	signal Addr_N, Addr_D : word(AddrW-1 downto 0);
+	
+	signal Button0Stable : bit1;
+	signal Button1Stable : bit1;
+	
 begin
+	Button0Debounce : entity work.Debounce
+	port map (
+		Clk => Clk,
+		x => Button0,
+		DBx => Button0Stable
+	);
+	
+	Button1Debounce : entity work.Debounce
+	port map (
+		Clk => Clk,
+		x => Button1,
+		DBx => Button1Stable
+	);
+
 	SyncProcRst : process (Clk, RstN)
 	begin
 		if RstN = '0' then
@@ -49,30 +67,30 @@ begin
 		end if;
 	end process;
 	
-	AsyncProc : process (WriteCnt_D, Btn0State_D, Btn1State_D, Addr_D, Button0, Button1, SeqCnt_D)
+	AsyncProc : process (WriteCnt_D, Btn0State_D, Btn1State_D, Addr_D, Button0Stable, Button1Stable, SeqCnt_D)
 	begin
 		WriteCnt_N <= WriteCnt_D;
 		We <= '0';
 		Re <= '0';
 		Data <= (others => '0');
-		Btn0State_N <= Button0;
-		Btn1State_N <= Button1;
+		Btn0State_N <= Button0Stable;
+		Btn1State_N <= Button1Stable;
 		Addr_N <= Addr_D;
 		SeqCnt_N <= SeqCnt_D;
 	
 		-- Initial writes 
 		if WriteCnt_D < 255 then
 			WriteCnt_N <= WriteCnt_D + 1;
-			if WriteCnt_D(4) = '1' then
+			if WriteCnt_D(4 downto 0) = "10000" then
 				SeqCnt_N <= SeqCnt_D + 1;
 				Addr_N <= xt0(SeqCnt_D, Addr_N'length);
 				We <= '1';
 				Data <= xt0(SeqCnt_D, Data'length);
 			end if;
-		elsif Button0 = '0' and Btn0State_D = '1' then
+		elsif Button0Stable = '0' and Btn0State_D = '1' then
 			Addr_N <= Addr_D - 1;
 			Re <= '1';
-		elsif Button1 = '0' and Btn1State_D = '1' then
+		elsif Button1Stable = '0' and Btn1State_D = '1' then
 			Addr_N <= Addr_D + 1;
 			Re <= '1';
 		end if;
