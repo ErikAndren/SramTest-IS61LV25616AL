@@ -26,7 +26,7 @@ end entity;
 
 architecture rtl of SramControllerTestGen is
 	signal WriteCnt_N, WriteCnt_D : word(8-1 downto 0);
-	signal SeqCnt_N, SeqCnt_D : word(4-1 downto 0);
+	signal SeqCnt_N, SeqCnt_D : word(8-1 downto 0);
 	--
 	signal Btn0State_N, Btn0State_D : bit1;
 	signal Btn1State_N, Btn1State_D : bit1;
@@ -81,7 +81,7 @@ begin
 		-- Initial writes 
 		if WriteCnt_D < 255 then
 			WriteCnt_N <= WriteCnt_D + 1;
-			if WriteCnt_D(4 downto 0) = "10000" then
+			if WriteCnt_D(1 downto 0) = "10" then
 				SeqCnt_N <= SeqCnt_D + 1;
 				Addr_N <= xt0(SeqCnt_D, Addr_N'length);
 				We <= '1';
