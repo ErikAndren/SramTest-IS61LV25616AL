@@ -14,7 +14,7 @@ entity SramTestTop is
 	);
 	port (
 	Clk      : in bit1;
-	Button3  : in bit1;
+	RstN     : in bit1;
 	--
 	Button0  : in bit1;
 	Button1  : in bit1;
@@ -58,6 +58,7 @@ begin
 	)
 	port map (
 		Clk	=> Clk,
+		RstN  => RstN,
 		--
 		Data => Data,
 		--
@@ -70,7 +71,7 @@ begin
 	SramCont : entity work.SramController
 	port map (
 		Clk  => Clk,
-		RstN => Button3,
+		RstN => RstN,
 		--
 		AddrIn => SramAddr,
 		WrData => SramWrData,
@@ -90,7 +91,7 @@ begin
 	SramTest : entity work.SramControllerTestGen
 	port map (
 		Clk  => Clk,
-		RstN => Button3,
+		RstN => RstN,
 		--
 		Button0 => Button0,
 		Button1 => Button1,

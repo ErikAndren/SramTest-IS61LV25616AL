@@ -11,8 +11,8 @@ entity SramController is
 		DataW : positive := 16
 	);
 	port (
-		Clk : in bit1;
-		RstN : in bit1;
+		Clk    : in bit1;
+		RstN   : in bit1;
 		AddrIn : in word(AddrW-1 downto 0);
 		WrData : in word(DataW-1 downto 0);
 		RdData : out word(DataW-1 downto 0);
