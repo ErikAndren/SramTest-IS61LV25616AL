@@ -25,8 +25,10 @@ entity SramControllerTestGen is
 end entity;
 
 architecture rtl of SramControllerTestGen is
-	signal WriteCnt_N, WriteCnt_D : word(8-1 downto 0);
-	signal SeqCnt_N, SeqCnt_D : word(8-1 downto 0);
+	constant noWords : positive := 262144;
+	constant noWordsW : positive := bits(NoWords);
+
+	signal SeqCnt_N, SeqCnt_D : word(NoWordsW downto 0);
 	--
 	signal Btn0State_N, Btn0State_D : bit1;
 	signal Btn1State_N, Btn1State_D : bit1;
@@ -34,6 +36,10 @@ architecture rtl of SramControllerTestGen is
 	
 	signal Button0Stable : bit1;
 	signal Button1Stable : bit1;
+	
+	constant Delay : positive := 1;
+	constant DelayW : positive := bits(Delay);
+	signal WaitCnt_N, WaitCnt_D : word(DelayW-1 downto 0);
 	
 begin
 	Button0Debounce : entity work.Debounce
@@ -53,23 +59,22 @@ begin
 	SyncProcRst : process (Clk, RstN)
 	begin
 		if RstN = '0' then
-			WriteCnt_D <= (others => '0');
 			Btn0State_D <= '1';
 			Btn1State_D <= '1';
 			Addr_D <= (others => '0');
 			SeqCnt_D <= (others => '0');
+			WaitCnt_d <= (others => '0');
 		elsif rising_edge(Clk) then
-			WriteCnt_D <= WriteCnt_N;
 			Btn0State_D <= Btn0State_N;
 			Btn1State_D <= Btn1State_N;
 			Addr_D <= Addr_N;
 			SeqCnt_D <= SeqCnt_N;
+			WaitCnt_D <= WaitCnt_N;
 		end if;
 	end process;
 	
-	AsyncProc : process (WriteCnt_D, Btn0State_D, Btn1State_D, Addr_D, Button0Stable, Button1Stable, SeqCnt_D)
+	AsyncProc : process (Btn0State_D, Btn1State_D, Addr_D, Button0Stable, Button1Stable, SeqCnt_D, WaitCnt_D)
 	begin
-		WriteCnt_N <= WriteCnt_D;
 		We <= '0';
 		Re <= '0';
 		Data <= (others => '0');
@@ -77,22 +82,28 @@ begin
 		Btn1State_N <= Button1Stable;
 		Addr_N <= Addr_D;
 		SeqCnt_N <= SeqCnt_D;
+		
+		WaitCnt_N <= WaitCnt_D;
+		if (WaitCnt_D > 0) then
+			WaitCnt_N <= WaitCnt_D - 1;
+		end if;
 	
 		-- Initial writes 
-		if WriteCnt_D < 255 then
-			WriteCnt_N <= WriteCnt_D + 1;
-			if WriteCnt_D(0 downto 0) = "1" then
-				SeqCnt_N <= SeqCnt_D + 1;
-				Addr_N <= xt0(SeqCnt_D, Addr_N'length);
-				We <= '1';
-				Data <= xt0(SeqCnt_D, Data'length);
-			end if;
+		if WaitCnt_D = 0 and SeqCnt_D < noWords then
+			SeqCnt_N <= SeqCnt_D + 1;
+			Addr_N <= SeqCnt_D(Addr_N'range);
+			We <= '1';
+			Data <= SeqCnt_D(Data'range);
+			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
+
 		elsif Button0Stable = '0' and Btn0State_D = '1' then
 			Addr_N <= Addr_D - 1;
 			Re <= '1';
+			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
 		elsif Button1Stable = '0' and Btn1State_D = '1' then
 			Addr_N <= Addr_D + 1;
 			Re <= '1';
+			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
 		end if;
 	end process;
 	Addr <= Addr_N;
