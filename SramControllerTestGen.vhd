@@ -41,6 +41,12 @@ architecture rtl of SramControllerTestGen is
 	constant DelayW : positive := bits(Delay);
 	signal WaitCnt_N, WaitCnt_D : word(DelayW-1 downto 0);
 	
+	constant NumbersPerSec : positive := 20;
+	constant ClkFreq : positive := 50000000;
+	constant ClksPerNbr : positive := ClkFreq / NumbersPerSec;
+	constant ClksPerNbrW : positive := bits(ClksPerNbr);
+	signal ToggleCnt_N, ToggleCnt_D : word(ClksPerNbrW-1 downto 0);
+	
 begin
 	Button0Debounce : entity work.Debounce
 	port map (
@@ -64,16 +70,18 @@ begin
 			Addr_D <= (others => '0');
 			SeqCnt_D <= (others => '0');
 			WaitCnt_d <= (others => '0');
+			ToggleCnt_D <= (others => '0');
 		elsif rising_edge(Clk) then
 			Btn0State_D <= Btn0State_N;
 			Btn1State_D <= Btn1State_N;
 			Addr_D <= Addr_N;
 			SeqCnt_D <= SeqCnt_N;
 			WaitCnt_D <= WaitCnt_N;
+			ToggleCnt_D <= ToggleCnt_N;
 		end if;
 	end process;
 	
-	AsyncProc : process (Btn0State_D, Btn1State_D, Addr_D, Button0Stable, Button1Stable, SeqCnt_D, WaitCnt_D)
+	AsyncProc : process (Btn0State_D, Btn1State_D, Addr_D, Button0Stable, Button1Stable, SeqCnt_D, WaitCnt_D, ToggleCnt_D)
 	begin
 		We <= '0';
 		Re <= '0';
@@ -82,20 +90,17 @@ begin
 		Btn1State_N <= Button1Stable;
 		Addr_N <= Addr_D;
 		SeqCnt_N <= SeqCnt_D;
+		ToggleCnt_N <= ToggleCnt_D + 1;
 		
 		WaitCnt_N <= WaitCnt_D;
 		if (WaitCnt_D > 0) then
 			WaitCnt_N <= WaitCnt_D - 1;
-		end if;
-	
-		-- Initial writes 
-		if WaitCnt_D = 0 and SeqCnt_D < noWords then
+		elsif SeqCnt_D < noWords then
 			SeqCnt_N <= SeqCnt_D + 1;
 			Addr_N <= SeqCnt_D(Addr_N'range);
 			We <= '1';
 			Data <= SeqCnt_D(Data'range);
 			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
-
 		elsif Button0Stable = '0' and Btn0State_D = '1' then
 			Addr_N <= Addr_D - 1;
 			Re <= '1';
@@ -104,6 +109,11 @@ begin
 			Addr_N <= Addr_D + 1;
 			Re <= '1';
 			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
+		elsif ToggleCnt_D = ClksPerNbr then
+			Addr_N <= Addr_D + 1;
+			Re <= '1';
+			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
+			ToggleCnt_N <= (others => '0');
 		end if;
 	end process;
 	Addr <= Addr_N;
