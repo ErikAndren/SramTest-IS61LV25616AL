@@ -95,12 +95,12 @@ begin
 		WaitCnt_N <= WaitCnt_D;
 		if (WaitCnt_D > 0) then
 			WaitCnt_N <= WaitCnt_D - 1;
-		elsif SeqCnt_D < noWords then
-			SeqCnt_N <= SeqCnt_D + 1;
-			Addr_N <= SeqCnt_D(Addr_N'range);
-			We <= '1';
-			Data <= SeqCnt_D(Data'range);
-			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
+--		elsif SeqCnt_D < noWords then
+--			SeqCnt_N <= SeqCnt_D + 1;
+--			Addr_N <= SeqCnt_D(Addr_N'range);
+--			We <= '1';
+--			Data <= SeqCnt_D(Data'range);
+--			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
 		elsif Button0Stable = '0' and Btn0State_D = '1' then
 			Addr_N <= Addr_D - 1;
 			Re <= '1';
@@ -109,8 +109,14 @@ begin
 			Addr_N <= Addr_D + 1;
 			Re <= '1';
 			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
-		elsif ToggleCnt_D = ClksPerNbr then
-			Addr_N <= Addr_D + 1;
+		elsif ToggleCnt_D = ClksPerNbr-3 then
+			Addr_N <= Addr_D + 2;
+			We <= '1';
+			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
+			SeqCnt_N <= SeqCnt_D + 1;
+			Data <= SeqCnt_D(Data'range);
+		elsif ToggleCnt_D = ClksPerNbr-1 then
+			Addr_N <= Addr_D - 1;
 			Re <= '1';
 			WaitCnt_N <= conv_word(Delay, WaitCnt_N'length);
 			ToggleCnt_N <= (others => '0');
