@@ -76,8 +76,11 @@ begin
 		--
 		D   <= (others => 'Z');
 		WeN <= '1';
+		
+		-- FIXME: Tie these to 0
 		UbN <= '1';
 		LbN <= '1';
+		
 		CeN <= '1';
 		OeN <= '1';
 		
@@ -114,6 +117,7 @@ begin
 				--
 				Addr_N <= AddrIn;
 				AddrOut <= AddrIn;
+				-- FIXME: Potentially change this to sample the line instead
 				Data_N <= (others => '1');
 			end if;
 		end case;
