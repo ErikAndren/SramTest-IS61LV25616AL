@@ -1,3 +1,6 @@
+-- Controller implementation for the IS61LV25616-10 memory
+-- Copyright erik@zachrisson.info 2014
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -13,6 +16,7 @@ entity SramController is
   port (
     Clk     : in    bit1;
     RstN    : in    bit1;
+    --
     AddrIn  : in    word(AddrW-1 downto 0);
     WrData  : in    word(DataW-1 downto 0);
     RdData  : out   word(DataW-1 downto 0);
