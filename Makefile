@@ -1,5 +1,6 @@
 
-FILES=SramController.vhd \
+FILES=SramPack.vhd \
+	SramController.vhd \
 	SramControllerTestGen.vhd \
 	SramTestTop.vhd
 
